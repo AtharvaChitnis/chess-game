@@ -1,4 +1,4 @@
-import { Color, Coords, FENChar } from "../models"
+import { Color, Coords, FENChar } from "../models";
 
 
 export abstract class  Piece
