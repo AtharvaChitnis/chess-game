@@ -108,6 +108,7 @@ export class ChessBoard {
             piece instanceof Knight ||
             piece instanceof King
           ) {
+            //pawns are only atacking diagonally
             if (piece instanceof Pawn && dy === 0) continue;
 
             const attackedPiece: Piece | null = this.chessBoard[newX][newY];
@@ -140,5 +141,26 @@ export class ChessBoard {
     }
     if (checkingCurrentPosition) this._checkState = { isInCheck: false };
     return false;
+  }
+
+  private isPositionSafeAfterMove(prevX: number, prevY: number, newX:number,newY: number): boolean {
+    const piece: Piece | null = this.chessBoard[prevX][prevY];
+    if(!piece) return false;
+
+    const newPiece: Piece | null = this.chessBoard[newX][newY];
+    // we cant put piece on a square that already contains piece of the same square
+    if(newPiece && newPiece.color === piece.color) return false;
+
+    //simulate position 
+    this.chessBoard[prevX][prevY] = null;
+    this.chessBoard[newX][newY] = piece;
+
+    const isPositionSafe: boolean = !this.isInCheck(piece.color, false);
+
+    // restor position back 
+    this.chessBoard[prevX][prevY] = piece;
+    this.chessBoard[newX][newY] = newPiece;
+
+    return isPositionSafe;
   }
 }
