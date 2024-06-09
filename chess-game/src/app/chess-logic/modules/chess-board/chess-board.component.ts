@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { Color, FENChar } from '../../models';
+import { Color, FENChar, Coords, CheckState } from '../../models';
 import { ChessBoard } from '../../chess-board';
+import { SelectedSquare } from './models';
 
 @Component({
   selector: 'app-chess-board',
@@ -14,11 +15,13 @@ export class ChessBoardComponent {
 
   private chessBoard = new ChessBoard();
   public chessBoardView: (FENChar | null)[][] = this.chessBoard.chessBoardView;
-  public get playerColor(): Color {return this.chessBoard.playerColor;}
-public selectedSquare: SelectedSquare = {piece:null};
+  public get playerColor(): Color {
+    return this.chessBoard.playerColor;
+  }
+  public selectedSquare: SelectedSquare = { piece: null };
+  public pieceSafeSquare: Coords[] = [];
+  private checkState: CheckState = this.chessBoard.checkState;
 
-
-  
   public isSquareDark(x: number, y: number): boolean {
     return ChessBoard.isSquareDark(x, y);
   }
