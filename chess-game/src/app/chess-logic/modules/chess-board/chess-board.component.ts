@@ -10,6 +10,8 @@ import { ChessBoard } from '../../chess-board';
   styleUrl: './chess-board.component.css',
 })
 export class ChessBoardComponent {
+  public pieceImagePaths = pieceImagePaths;
+
   private chessBoard = new ChessBoard();
   public chessBoardView: (FENChar | null)[][] = this.chessBoard.chessBoardView;
   public get playerColor(): Color {
