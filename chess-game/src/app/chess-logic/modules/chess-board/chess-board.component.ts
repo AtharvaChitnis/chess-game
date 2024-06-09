@@ -14,10 +14,11 @@ export class ChessBoardComponent {
 
   private chessBoard = new ChessBoard();
   public chessBoardView: (FENChar | null)[][] = this.chessBoard.chessBoardView;
-  public get playerColor(): Color {
-    return this.chessBoard.playerColor;
-  }
+  public get playerColor(): Color {return this.chessBoard.playerColor;}
+public selectedSquare: SelectedSquare = {piece:null};
 
+
+  
   public isSquareDark(x: number, y: number): boolean {
     return ChessBoard.isSquareDark(x, y);
   }
