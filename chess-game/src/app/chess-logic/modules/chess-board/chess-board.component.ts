@@ -78,6 +78,31 @@ export class ChessBoardComponent {
     this.pieceSafeSquares = this.safeSquares.get(x + ',' + y) || [];
   }
 
+  private placingPiece(newX:number, newY: number): void {
+    if(!this.selectedSquare.piece) return;
+    if(!this.isSquareSafeForSelectedPiece(newX,newY))return;
+
+    // pawn promotion
+    const isPawnSelected: boolean = this.selectedSquare.piece === FENChar.WhitePawn || this.selectedSquare.piece === FENChar.BlackPawn;
+    const isPawnOnlastRank:boolean = isPawnSelected && (newX===7 || newX ===0);
+    const shouldOpenPromotionDialog:boolean = this.isPromotionActive && isPawnOnlastRank;
+
+    if(shouldOpenPromotionDialog) {
+      this.pieceSafeSquares = [];
+      this.isPromotionActive = true;
+      this.promotionCoords = { x: newX, y:newY };
+      // because now we wait for players to choose promoted piece
+      return;
+    }
+
+    const { x: prevX, y:prevY } = this.selectedSquare;
+    this.updateBoard(prevX,prevY,newX, newY,this.promotedPiece);
+  }
+
+  protected updateBoard(prevX)
+
+
+
   public closePawnPromotionDialog(): void {
     this.unmarkingPreviouslySelectedAndSafeSquares();
   }
