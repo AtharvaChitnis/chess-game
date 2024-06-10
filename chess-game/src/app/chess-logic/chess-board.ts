@@ -427,7 +427,6 @@ export class ChessBoard {
     // update the board
     if (promotedPieceType) {
       this.chessBoard[newX][newY] = this.promotedPiece(promotedPieceType);
-      moveType.add(MoveType.Promotion);
     } else {
       this.chessBoard[newX][newY] = piece;
     }
@@ -467,6 +466,7 @@ export class ChessBoard {
 
     this._isGameOver = this.isGameFinished();
   }
+  
 
   private handlingSpecialMoves(
     piece: Piece,

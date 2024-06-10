@@ -82,6 +82,24 @@ export class ChessBoardComponent {
     );
   }
 
+  public isSquareLastMove(x: number, y: number): boolean {
+    if (!this.selectedSquare.piece) return false;
+    return this.selectedSquare.x === x && this.selectedSquare.y === y;
+  }
+
+  public isSquareChecked(x: number, y: number): boolean {
+    return (
+      this.checkState.isInCheck &&
+      this.checkState.x === x &&
+      this.checkState.y === y
+    );
+  }
+
+  public isSquarePromotionSquare(x: number, y: number): boolean {
+    if (!this.promotionCoords) return false;
+    return this.promotionCoords.x === x && this.promotionCoords.y === y;
+  }
+
   private unmarkingPreviouslySelectedAndSafeSquares(): void {
     this.selectedSquare = { piece: null };
     this.pieceSafeSquares = [];
@@ -164,6 +182,8 @@ export class ChessBoardComponent {
   public closePawnPromotionDialog(): void {
     this.unmarkingPreviouslySelectedAndSafeSquares();
   }
+
+  private
 
   public move(x: number, y: number): void {
     this.selectingPiece(x, y);
