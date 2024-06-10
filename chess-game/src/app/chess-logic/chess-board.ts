@@ -338,7 +338,6 @@ export class ChessBoard {
 
     return isPositionSafe;
   }
-  
 
   private canCastle(king: King, kingSideCastle: boolean): boolean {
     if (king.hasMoved) return false;
@@ -381,8 +380,6 @@ export class ChessBoard {
     );
   }
 
-
-  
   public move(
     prevX: number,
     prevY: number,
@@ -467,33 +464,58 @@ export class ChessBoard {
     this._isGameOver = this.isGameFinished();
   }
 
-  private handlingSpecialMoves(piece: Piece, prevX:number, prevY: number, newX: number, newY: number,moveType: Set<MoveType>): void {
-    if(piece instanceof King && Math.abs(newY - prevY) === 2) {
+  private handlingSpecialMoves(
+    piece: Piece,
+    prevX: number,
+    prevY: number,
+    newX: number,
+    newY: number,
+    moveType: Set<MoveType>
+  ): void {
+    if (piece instanceof King && Math.abs(newY - prevY) === 2) {
       // newY > prevY === king side castle
 
       const rookPositionX: number = prevX;
-      const rookPositionY: number = newY>prevY ? 7 : 0;
+      const rookPositionY: number = newY > prevY ? 7 : 0;
       const rook = this.chessBoard[rookPositionX][rookPositionY] as Rook;
-      const rookNewPositionY : number = newY > prevY ? 5 : 3;
-      this.chessBoard[rookPositionX][rookPositionY] =null;
+      const rookNewPositionY: number = newY > prevY ? 5 : 3;
+      this.chessBoard[rookPositionX][rookPositionY] = null;
       this.chessBoard[rookPositionX][rookNewPositionY] = rook;
       rook.hasMoved = true;
       moveType.add(MoveType.Castling);
-    }
-    else if (
-      piece instanceof Pawn && this._lastMove && this._lastMove.piece instanceof Pawn && Math.abs(this._lastMove.currX - this._lastMove.prevX) === 2&& prevX === this._lastMove.currX && newY === this._lastMove.currY
+    } else if (
+      piece instanceof Pawn &&
+      this._lastMove &&
+      this._lastMove.piece instanceof Pawn &&
+      Math.abs(this._lastMove.currX - this._lastMove.prevX) === 2 &&
+      prevX === this._lastMove.currX &&
+      newY === this._lastMove.currY
     ) {
-      this.chessBoard[this._lastMove.currX][this._lastMove.currY] =null;
+      this.chessBoard[this._lastMove.currX][this._lastMove.currY] = null;
       moveType.add(MoveType.Capture);
     }
   }
 
-  private promotedPiece(promotedPieceType: FENChar): Knight | Bishop | Rook | Queen {
-    if(promotedPieceType === FENChar.WhiteKnight || promotedPieceType === FENChar.BlackKnight) return new Knight(this._playerColor);
+  private promotedPiece(
+    promotedPieceType: FENChar
+  ): Knight | Bishop | Rook | Queen {
+    if (
+      promotedPieceType === FENChar.WhiteKnight ||
+      promotedPieceType === FENChar.BlackKnight
+    )
+      return new Knight(this._playerColor);
 
-    if(promotedPieceType === FENChar.WhiteBishop || promotedPieceType === FENChar.BlackBishop) return new Bishop(this._playerColor);
+    if (
+      promotedPieceType === FENChar.WhiteBishop ||
+      promotedPieceType === FENChar.BlackBishop
+    )
+      return new Bishop(this._playerColor);
 
-    if(promotedPieceType === FENChar.WhiteRook || promotedPieceType === FENChar.BlackRook) return new Rook(this.playerColor);
+    if (
+      promotedPieceType === FENChar.WhiteRook ||
+      promotedPieceType === FENChar.BlackRook
+    )
+      return new Rook(this.playerColor);
 
     return new Queen(this.playerColor);
   }
