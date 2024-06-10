@@ -9,7 +9,7 @@ import {
   GameHistory,
   MoveList,
 } from './models';
-import {FENConverter} from "./FENConverter";
+import { FENConverter } from './FENConverter';
 import { Bishop } from './pieces/bishop';
 import { King } from './pieces/king';
 import { Knight } from './pieces/knight';
@@ -27,19 +27,18 @@ export class ChessBoard {
   private _checkState: CheckState = { isInCheck: false };
   private fiftyMoveRuleCounter: number = 0;
 
-  private _isGameOver:boolean = false;
+  private _isGameOver: boolean = false;
   private _gameOverMessage: string | undefined;
 
   private fullNumberOfMoves: number = 1;
   private threeFoldRepetitionDictionary = new Map<string, number>();
-  private threeFoldRepetitionFlag:boolean =false;
+  private threeFoldRepetitionFlag: boolean = false;
 
   private _boardAsFEN: string = FENConverter.initialPosition;
   private FENConverter = new FENConverter();
 
   private _moveList: MoveList = [];
   private _gameHistory: GameHistory;
-
 
   constructor() {
     this.chessBoard = [
@@ -89,7 +88,13 @@ export class ChessBoard {
       ],
     ];
     this._safeSquares = this.findSafeSquares();
-    this._gameHistory = [{ board: this.chessBoardView, lastMove: this._lastMove, checkState: this._checkState}];
+    this._gameHistory = [
+      {
+        board: this.chessBoardView,
+        lastMove: this._lastMove,
+        checkState: this._checkState,
+      },
+    ];
   }
 
   public get safeSquares(): SafeSquares {
@@ -333,6 +338,8 @@ export class ChessBoard {
 
     return isPositionSafe;
   }
+  
+
   private canCastle(king: King, kingSideCastle: boolean): boolean {
     if (king.hasMoved) return false;
 
@@ -374,6 +381,8 @@ export class ChessBoard {
     );
   }
 
+
+  
   public move(
     prevX: number,
     prevY: number,
@@ -441,24 +450,59 @@ export class ChessBoard {
       moveType.add(!safeSquares.size ? MoveType.CheckMate : MoveType.Check);
     else if (!moveType.size) moveType.add(MoveType.BasicMove);
 
-    this.isPositionSafeAfterMove(promotedPieceType);
+    this.storeMove(promotedPieceType);
     this.updateGameHistory();
 
     this._safeSquares = safeSquares;
-    if(this._playerColor === Color.White) this.fullNumberOfMoves++;
-    this._boardAsFEN = this.FENConverter.convertBoardToFEN(this.chessBoard, this._playerColor, this._lastMove, this.fiftyMoveRuleCounter, this.fullNumberOfMoves);
+    if (this._playerColor === Color.White) this.fullNumberOfMoves++;
+    this._boardAsFEN = this.FENConverter.convertBoardToFEN(
+      this.chessBoard,
+      this._playerColor,
+      this._lastMove,
+      this.fiftyMoveRuleCounter,
+      this.fullNumberOfMoves
+    );
     this.updateThreeFoldRepetitionDictionary(this._boardAsFEN);
 
     this._isGameOver = this.isGameFinished();
   }
 
-  private updateGameHistory(): void {
-    this._gameHistory.push({
-      board: [...this.chessBoardView.map(row => [...row])],
-checkState: { ...this._checkState },
-lastMove: this._lastMove ? { ...this._lastMove} :undefined
-    });
-  }
+  private handlingSpecialMoves(piece: Piece, prevX:number, prevY: number, newX: number, newY: number,moveType: Set<MoveType>): void {
+    if(piece instanceof King && Math.abs(newY - prevY) === 2) {
+      // newY > prevY === king side castle
+
+      const rookPositionX: number = prevX;
+      const rookPositionY: number = newY>prevY ? 7 : 0;
+      const rook = this.chessBoard[rookPositionX][rookPositionY] as Rook;
+      const rookNewPositionY : number = newY > prevY ? 5 : 3;
+      this.chessBoard[rookPositionX][rookPositionY] =null;
+      this.chessBoard[rookPositionX][rookNewPositionY] = rook;
+      rook.hasMoved = true;
+      moveType.add(MoveType.Castling);
+    }
+    else if (
+      piece instanceof Pawn && this._lastMove && this._lastMove.piece instanceof Pawn && Math.abs(this._lastMove.currX - this._lastMove.prevX) === 2&& prevX === this._lastMove.currX && newY === this._lastMove.currY
+    ) {
+      this.chessBoard[this._lastMove.currX][this._lastMove.currY] =null;
+      moveType.add(MoveType.Capture);
+    }
   }
 
+  private promotedPiece(promotedPieceType: FENChar): Knight | Bishop | Rook | Queen {
+    if(promotedPieceType === FENChar.WhiteKnight || promotedPieceType === FENChar.BlackKnight) return new Knight(this._playerColor);
+
+    if(promotedPieceType === FENChar.WhiteBishop || promotedPieceType === FENChar.BlackBishop) return new Bishop(this._playerColor);
+
+    if(promotedPieceType === FENChar.WhiteRook || promotedPieceType === FENChar.BlackRook) return new Rook(this.playerColor);
+
+    return new Queen(this.playerColor);
+  }
+
+  private updateGameHistory(): void {
+    this._gameHistory.push({
+      board: [...this.chessBoardView.map((row) => [...row])],
+      checkState: { ...this._checkState },
+      lastMove: this._lastMove ? { ...this._lastMove } : undefined,
+    });
+  }
 }
