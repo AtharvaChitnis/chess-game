@@ -452,4 +452,13 @@ export class ChessBoard {
     this._isGameOver = this.isGameFinished();
   }
 
+  private updateGameHistory(): void {
+    this._gameHistory.push({
+      board: [...this.chessBoardView.map(row => [...row])],
+checkState: { ...this._checkState },
+lastMove: this._lastMove ? { ...this._lastMove} :undefined
+    });
+  }
+  }
+
 }
