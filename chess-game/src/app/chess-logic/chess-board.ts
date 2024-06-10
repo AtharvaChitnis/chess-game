@@ -121,6 +121,10 @@ export class ChessBoard {
     return this._isGameOver;
   }
 
+  public get lastMove(): LastMove | undefined {
+    return this._lastMove;
+  }
+
   public get gameOverMessage(): string | undefined {
     return this._gameOverMessage;
   }
