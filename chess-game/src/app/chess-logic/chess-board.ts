@@ -5,7 +5,11 @@ import {
   CheckState,
   SafeSquares,
   LastMove,
+  MoveType,
+  GameHistory,
+  MoveList,
 } from './models';
+import {FENConverter} from "./FENConverter";
 import { Bishop } from './pieces/bishop';
 import { King } from './pieces/king';
 import { Knight } from './pieces/knight';
@@ -21,6 +25,21 @@ export class ChessBoard {
   private _safeSquares: SafeSquares;
   private _lastMove: LastMove | undefined;
   private _checkState: CheckState = { isInCheck: false };
+  private fiftyMoveRuleCounter: number = 0;
+
+  private_isGameOver:boolean = false;
+  private _gameOverMessage: string | undefined;
+
+  private fullNumberOfMoves: number = 1;
+  private threeFoldRepetitionDictionary = new Map<string, number>();
+  private threeFoldRepetitionFlag:boolean =false;
+
+  private _boardAsFEN: string = FENConverter.initialPosition;
+  private FENConverter = new this.FENConverter();
+
+  private _moveList: MoveList = [];
+  private _gameHistory: GameHistory;
+
 
   constructor() {
     this.chessBoard = [
@@ -202,7 +221,7 @@ export class ChessBoard {
           let newPiece: Piece | null = this.chessBoard[newX][newY];
           if (newPiece && newPiece.color === piece.color) continue;
 
-          // need to restrict pawn moves in certaine directions
+          // need to restrict pawn moves in certain directions
           if (piece instanceof Pawn) {
             // cant move pawn two squares straight if there is piece infront of it.
             if (dx === 2 || dx === -2) {
@@ -332,5 +351,83 @@ export class ChessBoard {
         secondNextKingPositionY
       )
     );
+  }
+
+  public move(
+    prevX: number,
+    prevY: number,
+    newX: number,
+    newY: number,
+    promotedPieceType: FENChar | null
+  ): void {
+    if (this._isGameOver) throw new Error('The GAME is OVER, No play no move');
+
+    if (!this.areCoordsValid(prevX, prevY) || !this.areCoordsValid(newX, newY))
+      return;
+    const piece: Piece | null = this.chessBoard[prevX][prevY];
+    if (!piece || piece.color !== this._playerColor) return;
+
+    const pieceSafeSquares: Coords[] | undefined = this._safeSquares.get(
+      prevX + ',' + prevY
+    );
+    if (
+      !pieceSafeSquares ||
+      !pieceSafeSquares.find((coords) => coords.x === newX && coords.y === newY)
+    )
+      throw new Error('Square is not safe');
+
+    if (
+      (piece instanceof Pawn ||
+        piece instanceof King ||
+        piece instanceof Rook) &&
+      !piece.hasMoved
+    )
+      piece.hasMoved = true;
+
+    const moveType = new Set<MoveType.Capture>();
+
+    const isPieceTaken: boolean = this.chessBoard[newX][newY] !== null;
+    if (isPieceTaken) moveType.add(MoveType.Capture);
+
+    if (piece instanceof Pawn || isPieceTaken) this.fiftyMoveRuleCounter = 0;
+    else this.fiftyMoveRuleCounter += 0.5;
+
+    this.handlingSpecialMoves(piece, prevX, prevY, newY, newX, moveType);
+    // update the board
+    if (promotedPieceType) {
+      this.chessBoard[newX][newY] = this.promotedPiece(promotedPieceType);
+      moveType.add(MoveType.Promotion);
+    } else {
+      this.chessBoard[newX][newY] = piece;
+    }
+
+    this.chessBoard[prevX][prevY] = null;
+
+    this._lastMove = {
+      prevX,
+      prevY,
+      currX: newX,
+      currY: newY,
+      piece,
+      moveType,
+    };
+    this._playerColor =
+      this._playerColor === Color.White ? Color.Black : Color.White;
+    this.isInCheck(this._playerColor, true);
+    const safeSquares: SafeSquares = this.findSafeSquares();
+
+    if (this._checkState.isInCheck)
+      moveType.add(!safeSquares.size ? MoveType.CheckMate : MoveType.Check);
+    else if (!moveType.size) moveType.add(MoveType.BasicMove);
+
+    this.isPositionSafeAfterMove(promotedPieceType);
+    this.updateGameHistory();
+
+    this._safeSquares = safeSquares;
+    if(this._playerColor === Color.White) this.fullNumberOfMoves++;
+    this._boardAsFEN = this.FENConverter.convertBoardToFEN(this.chessBoard, this._playerColor, this._lastMove, this.fiftyMoveRuleCounter, this.fullNumberOfMoves);
+    this.updateThreeFoldRepetitionDictionary(this._boardAsFEN);
+
+    this._isGameOver = this.isGameFinished();
   }
 }
