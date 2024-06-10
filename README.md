@@ -1,8 +1,7 @@
 # chess-game
 
 This is an Angular Project, for my attempt to create a chess-game.
-
-An interactive chess board application built with Angular. This project provides a full-featured chess interface, allowing players to make moves, handle pawn promotions, and view the game's state.
+This project provides a full-featured chess interface, allowing players to make moves, handle pawn promotions, and view the game's state.
 
 ## Features
 
