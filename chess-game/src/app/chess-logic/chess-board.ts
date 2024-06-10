@@ -27,7 +27,7 @@ export class ChessBoard {
   private _checkState: CheckState = { isInCheck: false };
   private fiftyMoveRuleCounter: number = 0;
 
-  private_isGameOver:boolean = false;
+  private _isGameOver:boolean = false;
   private _gameOverMessage: string | undefined;
 
   private fullNumberOfMoves: number = 1;
@@ -35,7 +35,7 @@ export class ChessBoard {
   private threeFoldRepetitionFlag:boolean =false;
 
   private _boardAsFEN: string = FENConverter.initialPosition;
-  private FENConverter = new this.FENConverter();
+  private FENConverter = new FENConverter();
 
   private _moveList: MoveList = [];
   private _gameHistory: GameHistory;
@@ -89,6 +89,7 @@ export class ChessBoard {
       ],
     ];
     this._safeSquares = this.findSafeSquares();
+    this._gameHistory = [{ board: this.chessBoardView, lastMove: this._lastMove, checkState: this._checkState}];
   }
 
   public get safeSquares(): SafeSquares {
@@ -109,6 +110,26 @@ export class ChessBoard {
         piece instanceof Piece ? piece.FENChar : null
       );
     });
+  }
+
+  public get isGameOver(): boolean {
+    return this._isGameOver;
+  }
+
+  public get gameOverMessage(): string | undefined {
+    return this._gameOverMessage;
+  }
+
+  public get boardAsFEN(): string {
+    return this._boardAsFEN;
+  }
+
+  public get moveList(): MoveList {
+    return this._moveList;
+  }
+
+  public get gameHistory(): GameHistory {
+    return this._gameHistory;
   }
 
   public isSquareDark(x: number, y: number): boolean {
@@ -430,4 +451,5 @@ export class ChessBoard {
 
     this._isGameOver = this.isGameFinished();
   }
+
 }
